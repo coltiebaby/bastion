@@ -3,26 +3,26 @@
 package main
 
 import (
-    "fmt"
-    "net/http/httputil"
+	"fmt"
+	"net/http/httputil"
 
-    "github.com/coltiebaby/go-lcu/clients/league"
+	"github.com/coltiebaby/go-lcu/clients/league"
 )
 
 func main() {
-    client, err := league.CreateFromUnix()
-    if err != nil {
-        fmt.Println("Error: ", err)
-        return
-    }
+	client, err := league.CreateFromUnix()
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
 
-    resp, err := client.Get(`/riotclient/get_region_locale`)
+	resp, err := client.Get(`/riotclient/get_region_locale`)
 
-    requestDump, err := httputil.DumpResponse(resp, true)
-    if err != nil {
-        fmt.Println("Error: ", err)
-        return
-    }
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
 
-    fmt.Println(string(requestDump))
+	fmt.Println(string(requestDump))
 }
