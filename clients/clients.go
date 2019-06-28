@@ -13,11 +13,7 @@ type Client interface {
 }
 
 // Basic way to create a request to most APIs
-func DefaultNewRequest(req_type, url string, data []byte) (*http.Request, error) {
-	var (
-		req *http.Request
-		err error
-	)
+func DefaultNewRequest(req_type, url string, data []byte) (req *http.Request, err error) {
 
 	if data != nil {
 		req, err = http.NewRequest(req_type, url, bytes.NewReader(data))
@@ -31,4 +27,5 @@ func DefaultNewRequest(req_type, url string, data []byte) (*http.Request, error)
 	}
 
 	return req, err
+
 }

@@ -18,7 +18,6 @@ func NewReplayClient() (*ReplayClient, error) {
 
 func (c *ReplayClient) NewRequest(req_type, uri string, form []byte) (*http.Request, error) {
 	rawUrl := fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri)
-	fmt.Println("Replay Request: ", req_type, rawUrl)
 
 	req, err := clients.DefaultNewRequest(req_type, rawUrl, form)
 	if err != nil {

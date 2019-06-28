@@ -46,13 +46,11 @@ func CreateFromUnix() (clients.Client, error) {
 	token := string(tokens[0][1])
 	path := string(paths[0][1])
 
-	fmt.Println(token, port, path)
 	return &LeagueClient{token: token, Port: port, Path: path}, nil
 }
 
 func (c *LeagueClient) NewRequest(req_type, uri string, form []byte) (*http.Request, error) {
 	rawUrl := fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri)
-	fmt.Println("LeagueClient Request: ", req_type, rawUrl)
 
 	req, err := clients.DefaultNewRequest(req_type, rawUrl, form)
 	if err != nil {

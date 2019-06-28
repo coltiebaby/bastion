@@ -3,6 +3,18 @@
 go-lcu is a library that helps you get connected to your league client with the replay api added in for good measure.
 
 ## Getting Started
+
+### Game Config
+The `game.cfg` file is located in
+
+- MacOS
+`/Applications/League\ of\ Legends.app/Contents/LoL/Config/game.cfg`
+
+- Windows
+`Unknown`
+
+*Note: You must have played a game once before its created.*
+
 ### Enabling TLS
 Attempt to look at two places when your app first launches.
 1. Looks for the environmental `LCU_SSH` to be set to an absolute path
