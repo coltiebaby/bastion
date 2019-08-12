@@ -41,7 +41,7 @@ func NewContext() *Context {
 }
 
 func (c *Context) AddComponent(key string, component Component) {
-	c.Components[key] = Component
+	c.Components[key] = component
 }
 
 type Component struct {

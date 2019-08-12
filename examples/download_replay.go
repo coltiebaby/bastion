@@ -3,10 +3,9 @@ package main
 
 import (
 	"fmt"
-	"net/http/httputil"
 
 	"github.com/coltiebaby/go-lcu/clients/league"
-	"github.com/coltiebaby/go-lcu/replays"
+	"github.com/coltiebaby/go-lcu/clients/league/replays"
 )
 
 func main() {
@@ -16,13 +15,7 @@ func main() {
 		return
 	}
 
-    replay := replays.NewReplay("3120136499")
-    resp, err := replay.Download(client)
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println("Error: ", err)
-		return
-	}
-
-	fmt.Println(string(requestDump))
+	replay := replays.NewReplay(client, "3120136499")
+	err = replay.Download(client)
+	fmt.Println(err)
 }
