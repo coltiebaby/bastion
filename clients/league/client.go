@@ -80,5 +80,6 @@ func (c *LeagueClient) Post(uri string, data []byte) (*http.Response, error) {
 }
 
 var (
-	NOT_RUNNING_ERR error = errors.New("League of legends is not currently running!")
+	DownloadFailedErr error = fmt.Errorf("Failed to download file.")
+	NOT_RUNNING_ERR   error = errors.New("League of legends is not currently running!")
 )
