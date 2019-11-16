@@ -4,8 +4,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/coltiebaby/go-lcu/clients/league"
-	"github.com/coltiebaby/go-lcu/clients/league/replays"
+	"github.com/coltiebaby/bastion/api/replay"
+	"github.com/coltiebaby/bastion/clients/league"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 		return
 	}
 
-	replay := replays.NewReplay(client, "3120136499")
-	err = replay.Download(client)
+	replay := replay.NewReplay(client, "3120136499")
+	err = replay.Download()
 	fmt.Println(err)
 }

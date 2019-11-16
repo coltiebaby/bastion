@@ -3,10 +3,10 @@ package replay
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"strings"
 
-	"github.com/coltiebaby/go-lcu/api"
-	"github.com/coltiebaby/go-lcu/clients"
+	"github.com/coltiebaby/bastion/clients"
+	"github.com/coltiebaby/bastion/components"
 )
 
 type Replay struct {
@@ -23,7 +23,7 @@ func NewReplay(client clients.Client, matchId string) Replay {
 
 func (r Replay) fmtUri(endpoint string, opts ...string) string {
 	base := fmt.Sprintf(`/lol-replays/v1/%s`, endpoint)
-	return fmt.Sprintf(base, opts...)
+	return fmt.Sprintf(base, strings.Join(opts, `/`))
 }
 
 // Checks the client for the configuration
@@ -88,16 +88,16 @@ func (r Replay) postDownload(endpoint string) (err error) {
 		return err
 	}
 
-	_, err := r.client.Post(uri, data)
+	_, err = r.client.Post(uri, data)
 	return err
 }
 
-func (r Replay) Download(endpoint string) (err error) {
-	return r.download("/download")
+func (r Replay) Download() (err error) {
+	return r.postDownload("/download")
 }
 
 func (r Replay) DownloadGraceful() error {
-	return r.download("/download/graceful")
+	return r.postDownload("/download/graceful")
 }
 
 func (r Replay) Watch() (err error) {

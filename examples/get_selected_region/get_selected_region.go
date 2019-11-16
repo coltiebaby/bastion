@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http/httputil"
 
-	"github.com/coltiebaby/go-lcu/clients/league"
+	"github.com/coltiebaby/bastion/clients/league"
 )
 
 func main() {
