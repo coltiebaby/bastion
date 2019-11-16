@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/coltiebaby/go-lcu/clients"
-	cu "github.com/coltiebaby/go-lcu/clients/clientutil"
+	"github.com/coltiebaby/bastion/clients"
+	cu "github.com/coltiebaby/bastion/clients/clientutil"
 )
 
 type ReplayClient struct {
