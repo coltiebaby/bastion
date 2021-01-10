@@ -19,7 +19,6 @@ type LeagueClient struct {
 	Path  string
 }
 
-// Create client from process information
 func CreateFromUnix() (client.Client, error) {
 	some_byes, err := exec.Command("ps", "-A").Output()
 	if err != nil {
@@ -35,6 +34,27 @@ func CreateFromUnix() (client.Client, error) {
 		return &LeagueClient{}, NotRunningErr
 	}
 
+	return newClient(output)
+}
+
+func CreateFromWindows() (client.Client, error) {
+	cmd := []string{
+		`process`,
+		`where`,
+		`name="LeagueClientUx.exe"`,
+		`get`,
+		`Caption,Processid,Commandline`,
+	}
+
+	output, err := exec.Command(`wmic`, cmd...).Output()
+	if err != nil {
+		return &LeagueClient{}, NotRunningErr
+	}
+
+	return newClient(output)
+}
+
+func newClient(output []byte) (client.Client, error) {
 	ports := regexp.MustCompile(`--app-port=([0-9]*)`).FindAllSubmatch(output, 1)
 	paths := regexp.MustCompile(`--install-directory=([\w//-_]*)`).FindAllSubmatch(output, 1)
 	tokens := regexp.MustCompile(`--remoting-auth-token=([\w-_]*)`).FindAllSubmatch(output, 1)
