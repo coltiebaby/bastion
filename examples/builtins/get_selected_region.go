@@ -7,6 +7,7 @@ import (
 	"net/http/httputil"
 
 	"github.com/coltiebaby/bastion/client/league"
+	"github.com/coltiebaby/bastion/client/league/builtin"
 )
 
 func main() {
@@ -16,7 +17,9 @@ func main() {
 		return
 	}
 
-	resp, err := client.Get(`/riotclient/get_region_locale`)
+	b := builtin.New(client)
+	req := &builtin.WebSocketFormatRequest{}
+	resp, err := b.WebSocketFormat(req)
 
 	requestDump, err := httputil.DumpResponse(resp, true)
 	if err != nil {

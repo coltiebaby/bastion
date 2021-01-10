@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"regexp"
 
-	"github.com/coltiebaby/bastion/clients"
-	cu "github.com/coltiebaby/bastion/clients/clientutil"
+	"github.com/coltiebaby/bastion/client"
+	cu "github.com/coltiebaby/bastion/client/clientutil"
 )
 
 type LeagueClient struct {
@@ -19,10 +20,10 @@ type LeagueClient struct {
 }
 
 // Create client from process information
-func CreateFromUnix() (clients.Client, error) {
+func CreateFromUnix() (client.Client, error) {
 	some_byes, err := exec.Command("ps", "-A").Output()
 	if err != nil {
-		return &LeagueClient{}, NOT_RUNNING_ERR
+		return &LeagueClient{}, NotRunningErr
 	}
 
 	cmd := exec.Command("grep", "LeagueClientUx")
@@ -31,7 +32,7 @@ func CreateFromUnix() (clients.Client, error) {
 
 	output, err := cmd.Output()
 	if err != nil {
-		return &LeagueClient{}, NOT_RUNNING_ERR
+		return &LeagueClient{}, NotRunningErr
 	}
 
 	ports := regexp.MustCompile(`--app-port=([0-9]*)`).FindAllSubmatch(output, 1)
@@ -39,7 +40,7 @@ func CreateFromUnix() (clients.Client, error) {
 	tokens := regexp.MustCompile(`--remoting-auth-token=([\w-_]*)`).FindAllSubmatch(output, 1)
 
 	if len(ports) < 0 && len(tokens) < 0 {
-		return &LeagueClient{}, NOT_RUNNING_ERR
+		return &LeagueClient{}, NotRunningErr
 	}
 
 	port := string(ports[0][1])
@@ -49,20 +50,24 @@ func CreateFromUnix() (clients.Client, error) {
 	return &LeagueClient{token: token, Port: port, Path: path}, nil
 }
 
-func (c *LeagueClient) NewRequest(req_type, uri string, form []byte) (*http.Request, error) {
-	rawUrl := fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri)
+func (c *LeagueClient) URL(uri string) (url.URL, error) {
+	u, err := url.Parse(fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri))
+	return *u, err
+}
 
-	req, err := clients.DefaultNewRequest(req_type, rawUrl, form)
+func (c *LeagueClient) NewRequest(req_type string, u url.URL, form []byte) (*http.Request, error) {
+	req, err := client.DefaultNewRequest(req_type, u, form)
 	if err != nil {
 		return req, err
 	}
-	req.SetBasicAuth(`riot`, c.token)
 
+	req.SetBasicAuth(`riot`, c.token)
 	return req, nil
+
 }
 
-func (c *LeagueClient) Get(uri string) (*http.Response, error) {
-	req, err := c.NewRequest("GET", uri, nil)
+func (c *LeagueClient) Get(u url.URL) (*http.Response, error) {
+	req, err := c.NewRequest("GET", u, nil)
 	if err != nil {
 		return &http.Response{}, err
 	}
@@ -70,8 +75,8 @@ func (c *LeagueClient) Get(uri string) (*http.Response, error) {
 	return cu.HttpClient.Do(req)
 }
 
-func (c *LeagueClient) Post(uri string, data []byte) (*http.Response, error) {
-	req, err := c.NewRequest("POST", uri, data)
+func (c *LeagueClient) Post(u url.URL, data []byte) (*http.Response, error) {
+	req, err := c.NewRequest("POST", u, data)
 	if err != nil {
 		return &http.Response{}, err
 	}
@@ -81,5 +86,5 @@ func (c *LeagueClient) Post(uri string, data []byte) (*http.Response, error) {
 
 var (
 	DownloadFailedErr error = fmt.Errorf("Failed to download file.")
-	NOT_RUNNING_ERR   error = errors.New("League of legends is not currently running!")
+	NotRunningErr     error = errors.New("League of legends is not currently running!")
 )
