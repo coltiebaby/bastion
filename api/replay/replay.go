@@ -3,8 +3,9 @@ package replay
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
+	"net/url"
 
+	"github.com/coltiebaby/bastion/api"
 	"github.com/coltiebaby/bastion/client"
 	"github.com/coltiebaby/bastion/components"
 )
@@ -14,22 +15,31 @@ type Replay struct {
 	MatchId string
 }
 
-func NewReplay(client client.Client, matchId string) Replay {
+func New(client client.Client, matchId string) Replay {
 	return Replay{
 		client:  client,
 		MatchId: matchId,
 	}
 }
 
-func (r Replay) fmtUri(endpoint string, opts ...string) string {
-	base := fmt.Sprintf(`/lol-replays/v1/%s`, endpoint)
-	return fmt.Sprintf(base, strings.Join(opts, `/`))
+func (r Replay) NewURL(endpoint string) (url.URL, error) {
+	req := api.Request{
+		Domain:  "lol-replays",
+		Version: "v1",
+		Uri:     endpoint,
+	}
+
+	return r.client.URL(req.String())
 }
 
 // Checks the client for the configuration
 func (r Replay) GetConfiguration() (c Config, err error) {
-	uri := r.fmtUri(`configuration`)
-	if resp, err := r.client.Get(uri); err != nil {
+	u, err := r.NewURL(fmt.Sprintf(`configuration`))
+	if err != nil {
+		return c, err
+	}
+
+	if resp, err := r.client.Get(u); err != nil {
 		err = json.NewDecoder(resp.Body).Decode(&c)
 	}
 
@@ -37,9 +47,12 @@ func (r Replay) GetConfiguration() (c Config, err error) {
 }
 
 func (r Replay) GetMetadata() (m Meta, err error) {
-	uri := r.fmtUri(`/metadata/%s`, r.MatchId)
+	u, err := r.NewURL(fmt.Sprintf(`metadata/%s`, r.MatchId))
+	if err != nil {
+		return m, err
+	}
 
-	if resp, err := r.client.Get(uri); err != nil {
+	if resp, err := r.client.Get(u); err != nil {
 		err = json.NewDecoder(resp.Body).Decode(&m)
 	}
 
@@ -48,9 +61,12 @@ func (r Replay) GetMetadata() (m Meta, err error) {
 
 // Returns the current replay directory set
 func (r Replay) path(endpoint string) (path string, err error) {
-	uri := r.fmtUri(endpoint)
+	u, err := r.NewURL(fmt.Sprintf(endpoint))
+	if err != nil {
+		return path, err
+	}
 
-	if resp, err := r.client.Get(uri); err != nil {
+	if resp, err := r.client.Get(u); err != nil {
 		err = json.NewDecoder(resp.Body).Decode(&path)
 	}
 
@@ -70,15 +86,22 @@ func (r Replay) PathDefault() (path string, err error) {
 }
 
 func (r Replay) Scan() (err error) {
-	uri := fmt.Sprintf("rofls/scan")
+	u, err := r.NewURL("/rofls/scan")
+	if err != nil {
+		return err
+	}
+
 	// Looks for a 204
-	_, err = r.client.Get(uri)
+	_, err = r.client.Get(u)
 
 	return err
 }
 
 func (r Replay) postDownload(endpoint string) (err error) {
-	uri := r.fmtUri("rofls/%s"+endpoint, r.MatchId)
+	u, err := r.NewURL(fmt.Sprintf("rofls/%s/%s", r.MatchId, endpoint))
+	if err != nil {
+		return err
+	}
 
 	ctx := components.NewContext()
 	ctx.AddComponent(`contextData`, MatchHistoryButton)
@@ -88,22 +111,25 @@ func (r Replay) postDownload(endpoint string) (err error) {
 		return err
 	}
 
-	_, err = r.client.Post(uri, data)
+	_, err = r.client.Post(u, data)
 	return err
 }
 
 func (r Replay) Download() (err error) {
-	return r.postDownload("/download")
+	return r.postDownload("download")
 }
 
 func (r Replay) DownloadGraceful() error {
-	return r.postDownload("/download/graceful")
+	return r.postDownload("download/graceful")
 }
 
 func (r Replay) Watch() (err error) {
-	uri := r.fmtUri("rofls/%s/watch", r.MatchId)
+	u, err := r.NewURL(fmt.Sprintf("rofls/%s/watch", r.MatchId))
+	if err != nil {
+		return err
+	}
 
-	_, err = r.client.Post(uri, []byte{})
+	_, err = r.client.Post(u, []byte{})
 
 	return err
 }

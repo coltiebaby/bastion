@@ -9,21 +9,26 @@ import (
 	cu "github.com/coltiebaby/bastion/client/clientutil"
 )
 
-type ReplayClient struct {
+type Client struct {
 	Port string
 }
 
-func NewReplayClient() (*ReplayClient, error) {
-	return &ReplayClient{Port: DEFAULT_PORT}, nil
+func New() (*Client, error) {
+	return &Client{Port: DEFAULT_PORT}, nil
 }
 
-func (c *LeagueClient) URL(uri string) (url.URL, error) {
-	return url.Parse(fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri))
+func (c *Client) URL(uri string) (u url.URL, err error) {
+	urlp, err := url.Parse(fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri))
+	if err == nil {
+		u = *urlp
+	}
+
+	return u, err
 }
 
-func (c *ReplayClient) NewRequest(req_type, u url.URL, form []byte) (*http.Request, error) {
+func (c *Client) NewRequest(req_type string, u url.URL, form []byte) (*http.Request, error) {
 
-	req, err := client.DefaultNewRequest(req_type, u.String(), form)
+	req, err := client.DefaultNewRequest(req_type, u, form)
 	if err != nil {
 		return req, err
 	}
@@ -32,7 +37,7 @@ func (c *ReplayClient) NewRequest(req_type, u url.URL, form []byte) (*http.Reque
 
 }
 
-func (c *ReplayClient) Get(u url.URL) (*http.Response, error) {
+func (c *Client) Get(u url.URL) (*http.Response, error) {
 	req, err := c.NewRequest("GET", u, nil)
 	if err != nil {
 		return &http.Response{}, err
@@ -41,7 +46,7 @@ func (c *ReplayClient) Get(u url.URL) (*http.Response, error) {
 	return cu.HttpClient.Do(req)
 }
 
-func (c *ReplayClient) Post(u url.URL, data []byte) (*http.Response, error) {
+func (c *Client) Post(u url.URL, data []byte) (*http.Response, error) {
 	req, err := c.NewRequest("POST", u, data)
 	if err != nil {
 		return &http.Response{}, err
