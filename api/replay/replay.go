@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/coltiebaby/bastion/clients"
+	"github.com/coltiebaby/bastion/client"
 	"github.com/coltiebaby/bastion/components"
 )
 
 type Replay struct {
-	client  clients.Client
+	client  client.Client
 	MatchId string
 }
 
-func NewReplay(client clients.Client, matchId string) Replay {
+func NewReplay(client client.Client, matchId string) Replay {
 	return Replay{
 		client:  client,
 		MatchId: matchId,

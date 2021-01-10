@@ -1,0 +1,9 @@
+package league
+
+import (
+	"github.com/coltiebaby/bastion/client"
+)
+
+func NewFromExisting() (client.Client, error) {
+	return CreateFromWindows()
+}
