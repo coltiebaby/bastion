@@ -13,7 +13,7 @@ import (
 	cu "github.com/coltiebaby/bastion/client/clientutil"
 )
 
-type LeagueClient struct {
+type Client struct {
 	token string
 	Port  string
 	Path  string
@@ -26,16 +26,16 @@ type LeagueClient struct {
 func CreateFromUnix() (client.Client, error) {
 	some_byes, err := exec.Command("ps", "-A").Output()
 	if err != nil {
-		return &LeagueClient{}, NotRunningErr
+		return &Client{}, NotRunningErr
 	}
 
-	cmd := exec.Command("grep", "LeagueClientUx")
+	cmd := exec.Command("grep", "ClientUx")
 	// Mimic "piping" data from a cmd
 	cmd.Stdin = bytes.NewReader(some_byes)
 
 	output, err := cmd.Output()
 	if err != nil {
-		return &LeagueClient{}, NotRunningErr
+		return &Client{}, NotRunningErr
 	}
 
 	return newClient(output)
@@ -49,43 +49,47 @@ func CreateFromWindows() (client.Client, error) {
 	cmd := []string{
 		`process`,
 		`where`,
-		`name="LeagueClientUx.exe"`,
+		`name="ClientUx.exe"`,
 		`get`,
 		`Caption,Processid,Commandline`,
 	}
 
 	output, err := exec.Command(`wmic`, cmd...).Output()
 	if err != nil {
-		return &LeagueClient{}, NotRunningErr
+		return &Client{}, NotRunningErr
 	}
 
 	return newClient(output)
 }
 
-// Both operating systems produce an output where we can find the important pieces for LeagueClient
+// Both operating systems produce an output where we can find the important pieces for Client
 func newClient(output []byte) (client.Client, error) {
 	ports := regexp.MustCompile(`--app-port=([0-9]*)`).FindAllSubmatch(output, 1)
 	paths := regexp.MustCompile(`--install-directory=([\w//-_]*)`).FindAllSubmatch(output, 1)
 	tokens := regexp.MustCompile(`--remoting-auth-token=([\w-_]*)`).FindAllSubmatch(output, 1)
 
 	if len(ports) < 0 && len(tokens) < 0 {
-		return &LeagueClient{}, NotRunningErr
+		return &Client{}, NotRunningErr
 	}
 
 	port := string(ports[0][1])
 	token := string(tokens[0][1])
 	path := string(paths[0][1])
 
-	return &LeagueClient{token: token, Port: port, Path: path}, nil
+	return &Client{token: token, Port: port, Path: path}, nil
 }
 
 // URL returns a url.URL that you can edit further.
-func (c *LeagueClient) URL(uri string) (url.URL, error) {
-	u, err := url.Parse(fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri))
-	return *u, err
+func (c *Client) URL(uri string) (u url.URL, err error) {
+	urlp, err := url.Parse(fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri))
+	if err == nil {
+		u = *urlp
+	}
+
+	return u, err
 }
 
-func (c *LeagueClient) NewRequest(req_type string, u url.URL, form []byte) (*http.Request, error) {
+func (c *Client) NewRequest(req_type string, u url.URL, form []byte) (*http.Request, error) {
 	req, err := client.DefaultNewRequest(req_type, u, form)
 	if err != nil {
 		return req, err
@@ -96,7 +100,7 @@ func (c *LeagueClient) NewRequest(req_type string, u url.URL, form []byte) (*htt
 
 }
 
-func (c *LeagueClient) Get(u url.URL) (*http.Response, error) {
+func (c *Client) Get(u url.URL) (*http.Response, error) {
 	req, err := c.NewRequest("GET", u, nil)
 	if err != nil {
 		return &http.Response{}, err
@@ -105,7 +109,7 @@ func (c *LeagueClient) Get(u url.URL) (*http.Response, error) {
 	return cu.HttpClient.Do(req)
 }
 
-func (c *LeagueClient) Post(u url.URL, data []byte) (*http.Response, error) {
+func (c *Client) Post(u url.URL, data []byte) (*http.Response, error) {
 	req, err := c.NewRequest("POST", u, data)
 	if err != nil {
 		return &http.Response{}, err
