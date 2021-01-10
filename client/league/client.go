@@ -19,6 +19,10 @@ type LeagueClient struct {
 	Path  string
 }
 
+// Create From Unix
+//
+// Creates a new client from an already open league of legends client using commands
+// that are related to a unix based system
 func CreateFromUnix() (client.Client, error) {
 	some_byes, err := exec.Command("ps", "-A").Output()
 	if err != nil {
@@ -37,6 +41,10 @@ func CreateFromUnix() (client.Client, error) {
 	return newClient(output)
 }
 
+// Create From Windows
+//
+// Creates a new client from an already open league of legends client using commands
+// that are related to a windows based system
 func CreateFromWindows() (client.Client, error) {
 	cmd := []string{
 		`process`,
@@ -54,6 +62,7 @@ func CreateFromWindows() (client.Client, error) {
 	return newClient(output)
 }
 
+// Both operating systems produce an output where we can find the important pieces for LeagueClient
 func newClient(output []byte) (client.Client, error) {
 	ports := regexp.MustCompile(`--app-port=([0-9]*)`).FindAllSubmatch(output, 1)
 	paths := regexp.MustCompile(`--install-directory=([\w//-_]*)`).FindAllSubmatch(output, 1)
@@ -70,6 +79,7 @@ func newClient(output []byte) (client.Client, error) {
 	return &LeagueClient{token: token, Port: port, Path: path}, nil
 }
 
+// URL returns a url.URL that you can edit further.
 func (c *LeagueClient) URL(uri string) (url.URL, error) {
 	u, err := url.Parse(fmt.Sprintf("https://127.0.0.1:%s%s", c.Port, uri))
 	return *u, err
